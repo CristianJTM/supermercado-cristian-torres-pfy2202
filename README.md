@@ -6,7 +6,7 @@ Semana 3 incorpora filtro por categoría, detalle de artículos y carrito con ac
 
 ## Sitio publicado
 
-[Ver la aplicación en GitHub Pages](https://cristianjtm.github.io/Exp1_S2_Cristian_Torres_DESARROLLO-FRONTEND-II_004A/)
+[Ver la aplicación en GitHub Pages](https://cristianjtm.github.io/supermercado-cristian-torres-pfy2202/)
 
 ## Stack
 
@@ -260,7 +260,7 @@ npm run deploy
 URL del sitio:
 
 ```text
-https://cristianjtm.github.io/Exp1_S2_Cristian_Torres_DESARROLLO-FRONTEND-II_004A/
+https://cristianjtm.github.io/supermercado-cristian-torres-pfy2202/
 ```
 
 ## Notas
@@ -277,15 +277,3 @@ https://cristianjtm.github.io/Exp1_S2_Cristian_Torres_DESARROLLO-FRONTEND-II_004
 ## Autor
 
 Cristian Torres — Proyecto académico PFY2202.
-
-## Repositorio de entrega
-
-El repositorio se renombrará a:
-
-```text
-supermercado-cristian-torres-pfy2202
-```
-
-Mientras se realiza el cambio de nombre, el sitio publicado corresponde a la URL actual de GitHub
-Pages. Después del renombre hay que actualizar `REPO_NAME` en `vite.config.js`, las URLs del README
-y ejecutar `npm run deploy`.
