@@ -13,6 +13,7 @@ const articulo = {
   marca: 'Colún',
   tipo: 'Lácteos',
   stock: 3,
+  precio: 1290,
 }
 
 function estadoBase() {
@@ -22,10 +23,11 @@ function estadoBase() {
   }
 }
 
-test('el estado inicial contiene los seis artículos y un carrito vacío', () => {
+test('el estado inicial contiene los seis artículos con precio y un carrito vacío', () => {
   assert.equal(ESTADO_INICIAL.articulos.length, 6)
   assert.deepEqual(ESTADO_INICIAL.carrito, [])
   assert.equal(ARTICULOS_INICIALES.length, 6)
+  assert.ok(ESTADO_INICIAL.articulos.every((item) => Number.isInteger(item.precio)))
 
   const copia = crearInventarioInicial()
   assert.notEqual(copia, ARTICULOS_INICIALES)
@@ -49,13 +51,28 @@ test('ADD_TO_CART descuenta stock y agrega una unidad', () => {
   const estado = estadoBase()
   const resultado = inventarioReducer(estado, {
     type: ACCIONES.AGREGAR_AL_CARRITO,
-    payload: 'a1',
+    payload: { articuloId: 'a1', cantidad: 1 },
   })
 
   assert.equal(resultado.articulos[0].stock, 2)
   assert.deepEqual(resultado.carrito, [{ articuloId: 'a1', cantidad: 1 }])
   assert.equal(estado.articulos[0].stock, 3)
   assert.deepEqual(estado.carrito, [])
+})
+
+test('ADD_TO_CART acepta varias unidades y suma al artículo ya agregado', () => {
+  const estado = {
+    articulos: [{ ...articulo, stock: 5 }],
+    carrito: [{ articuloId: 'a1', cantidad: 1 }],
+  }
+  const resultado = inventarioReducer(estado, {
+    type: ACCIONES.AGREGAR_AL_CARRITO,
+    payload: { articuloId: 'a1', cantidad: 2 },
+  })
+
+  assert.equal(resultado.articulos[0].stock, 3)
+  assert.equal(resultado.carrito[0].cantidad, 3)
+  assert.equal(estado.articulos[0].stock, 5)
 })
 
 test('ADD_TO_CART no permite stock negativo', () => {
@@ -65,35 +82,57 @@ test('ADD_TO_CART no permite stock negativo', () => {
   }
   const resultado = inventarioReducer(estado, {
     type: ACCIONES.AGREGAR_AL_CARRITO,
-    payload: 'a1',
+    payload: { articuloId: 'a1', cantidad: 1 },
   })
 
   assert.equal(resultado, estado)
   assert.equal(resultado.articulos[0].stock, 0)
 })
 
-test('INCREMENT_CART descuenta stock y aumenta cantidad', () => {
+test('ADD_TO_CART rechaza una cantidad mayor al stock disponible', () => {
   const estado = {
-    articulos: [{ ...articulo, stock: 2 }],
-    carrito: [{ articuloId: 'a1', cantidad: 1 }],
+    articulos: [{ ...articulo, stock: 1 }],
+    carrito: [],
   }
   const resultado = inventarioReducer(estado, {
-    type: ACCIONES.INCREMENTAR_CARRITO,
-    payload: 'a1',
+    type: ACCIONES.AGREGAR_AL_CARRITO,
+    payload: { articuloId: 'a1', cantidad: 2 },
   })
 
-  assert.equal(resultado.articulos[0].stock, 1)
-  assert.equal(resultado.carrito[0].cantidad, 2)
+  assert.equal(resultado, estado)
 })
 
-test('INCREMENT_CART no supera el stock disponible', () => {
+test('EDIT_ARTICULO actualiza los datos sin mutar el estado ni tocar el carrito', () => {
   const estado = {
-    articulos: [{ ...articulo, stock: 0 }],
-    carrito: [{ articuloId: 'a1', cantidad: 3 }],
+    articulos: [{ ...articulo }],
+    carrito: [{ articuloId: 'a1', cantidad: 2 }],
   }
   const resultado = inventarioReducer(estado, {
-    type: ACCIONES.INCREMENTAR_CARRITO,
-    payload: 'a1',
+    type: ACCIONES.EDITAR,
+    payload: {
+      id: 'a1',
+      nombre: 'Leche descremada',
+      marca: 'Soprole',
+      tipo: 'Lácteos',
+      stock: 9,
+      precio: 1390,
+    },
+  })
+
+  assert.equal(resultado.articulos[0].nombre, 'Leche descremada')
+  assert.equal(resultado.articulos[0].marca, 'Soprole')
+  assert.equal(resultado.articulos[0].precio, 1390)
+  assert.equal(resultado.articulos[0].stock, 9)
+  assert.deepEqual(resultado.carrito, estado.carrito)
+  assert.equal(estado.articulos[0].nombre, 'Leche entera')
+  assert.notEqual(resultado.articulos, estado.articulos)
+})
+
+test('EDIT_ARTICULO ignora un id inexistente', () => {
+  const estado = estadoBase()
+  const resultado = inventarioReducer(estado, {
+    type: ACCIONES.EDITAR,
+    payload: { id: 'no-existe', nombre: 'Otro' },
   })
 
   assert.equal(resultado, estado)

@@ -1,5 +1,6 @@
 import { Link, useNavigate } from 'react-router'
 import InventarioHeader from '../components/inventario/InventarioHeader.jsx'
+import Button, { buttonClass } from '../components/ui/Button.jsx'
 import FormField from '../components/ui/FormField.jsx'
 import { ACCIONES, useInventario } from '../context/InventarioContext.jsx'
 import { FORM_INICIAL_ARTICULO, TIPOS_ARTICULO } from '../data/inventario.js'
@@ -25,6 +26,7 @@ export default function AgregarArticulo() {
     nombreRef,
     marcaRef,
     stockRef,
+    precioRef,
     tipoRef,
   } = useFormArticulo({
     initialValues: FORM_INICIAL_ARTICULO,
@@ -47,7 +49,7 @@ export default function AgregarArticulo() {
       <InventarioHeader
         eyebrow="Inventario"
         title="Agregar artículo"
-        lead="Registra un nuevo producto con su nombre, marca y tipo para incorporarlo al inventario del supermercado."
+        lead="Registra un nuevo producto con su nombre, marca, tipo, precio y stock para incorporarlo al inventario del supermercado."
       />
 
       <div className="mt-8 rounded-3xl border border-solid border-sf-border bg-white p-6 shadow-sm sm:p-8">
@@ -91,6 +93,23 @@ export default function AgregarArticulo() {
 
           <FormField
             variant="tailwind"
+            id="precio"
+            name="precio"
+            label="Precio (CLP)"
+            type="number"
+            min={1}
+            max={9999999}
+            step={1}
+            value={form.precio}
+            onChange={handleChange}
+            error={errores.precio}
+            inputRef={precioRef}
+            required
+            placeholder="Ej: 1290"
+          />
+
+          <FormField
+            variant="tailwind"
             id="stock"
             name="stock"
             label="Cantidad disponible"
@@ -120,16 +139,8 @@ export default function AgregarArticulo() {
           />
 
           <div className="flex flex-col gap-3 sm:col-span-2 sm:flex-row sm:items-center">
-            <button
-              type="submit"
-              className="inline-flex items-center justify-center rounded-full bg-sf-green px-5 py-3 text-sm font-bold text-white shadow-sm transition hover:bg-sf-dark focus:outline-none focus:ring-2 focus:ring-sf-green/40"
-            >
-              Guardar artículo
-            </button>
-            <Link
-              to="/inventario/lista"
-              className="inline-flex items-center justify-center rounded-full border border-solid border-sf-border px-5 py-3 text-sm font-bold text-sf-text transition hover:bg-sf-sand focus:outline-none focus:ring-2 focus:ring-sf-green/30"
-            >
+            <Button type="submit">Guardar artículo</Button>
+            <Link to="/inventario/lista" className={buttonClass({ variant: 'secondary' })}>
               Ver inventario
             </Link>
           </div>

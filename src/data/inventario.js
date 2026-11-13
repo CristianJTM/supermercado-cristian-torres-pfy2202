@@ -12,4 +12,5 @@ export const FORM_INICIAL_ARTICULO = {
   marca: '',
   tipo: TIPOS_ARTICULO[0],
   stock: 1,
+  precio: '',
 }

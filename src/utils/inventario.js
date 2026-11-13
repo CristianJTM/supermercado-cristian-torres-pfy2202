@@ -22,3 +22,14 @@ export function obtenerCarritoDetallado(articulos, carrito) {
 export function contarUnidadesCarrito(carrito) {
   return carrito.reduce((total, item) => total + item.cantidad, 0)
 }
+
+export function calcularSubtotal(precio, cantidad) {
+  return precio * cantidad
+}
+
+export function calcularTotalCarrito(items) {
+  return items.reduce(
+    (total, item) => total + calcularSubtotal(item.articulo.precio, item.cantidad),
+    0,
+  )
+}

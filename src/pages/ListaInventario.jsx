@@ -2,6 +2,8 @@ import { useMemo, useState } from 'react'
 import { Link } from 'react-router'
 import InventarioHeader from '../components/inventario/InventarioHeader.jsx'
 import TablaInventario from '../components/inventario/TablaInventario.jsx'
+import Button, { buttonClass } from '../components/ui/Button.jsx'
+import ConfirmDialog from '../components/ui/ConfirmDialog.jsx'
 import { ACCIONES, useInventario } from '../context/InventarioContext.jsx'
 import { TIPOS_ARTICULO } from '../data/inventario.js'
 import { filtrarArticulos } from '../utils/inventario.js'
@@ -11,16 +13,22 @@ const CATEGORIAS = ['Todas', ...TIPOS_ARTICULO]
 export default function ListaInventario() {
   const { articulos, dispatch } = useInventario()
   const [categoria, setCategoria] = useState('Todas')
+  const [articuloAEliminar, setArticuloAEliminar] = useState(null)
   const articulosFiltrados = useMemo(
     () => filtrarArticulos(articulos, categoria),
     [articulos, categoria],
   )
 
-  function handleEliminar(id) {
+  function confirmarEliminacion() {
+    if (!articuloAEliminar) {
+      return
+    }
+
     dispatch({
       type: ACCIONES.ELIMINAR,
-      payload: id,
+      payload: articuloAEliminar.id,
     })
+    setArticuloAEliminar(null)
   }
 
   const total = articulos.length
@@ -36,10 +44,7 @@ export default function ListaInventario() {
           title="Lista de inventario"
           lead="Filtra por categoría, revisa el stock y administra los artículos disponibles."
         />
-        <Link
-          to="/inventario/agregar"
-          className="inline-flex items-center justify-center rounded-full bg-sf-green px-5 py-3 text-sm font-bold text-white shadow-sm transition hover:bg-sf-dark focus:outline-none focus:ring-2 focus:ring-sf-green/40"
-        >
+        <Link to="/inventario/agregar" className={buttonClass()}>
           Agregar artículo
         </Link>
       </div>
@@ -74,10 +79,7 @@ export default function ListaInventario() {
           <p className="mt-2 mb-0 text-sm text-sf-muted">
             Agrega el primer artículo para comenzar a llenar tu inventario.
           </p>
-          <Link
-            to="/inventario/agregar"
-            className="mt-5 inline-flex items-center justify-center rounded-full bg-sf-green px-5 py-3 text-sm font-bold text-white shadow-sm transition hover:bg-sf-dark focus:outline-none focus:ring-2 focus:ring-sf-green/40"
-          >
+          <Link to="/inventario/agregar" className={buttonClass({ className: 'mt-5' })}>
             Agregar artículo
           </Link>
         </div>
@@ -91,21 +93,38 @@ export default function ListaInventario() {
           <p className="mt-2 mb-0 text-sm text-sf-muted">
             Cambia la categoría o vuelve a ver todo el inventario.
           </p>
-          <button
-            type="button"
+          <Button
+            variant="secondary"
+            className="mt-5"
             onClick={() => setCategoria('Todas')}
-            className="mt-5 inline-flex items-center justify-center rounded-full border border-solid border-sf-border px-5 py-3 text-sm font-bold text-sf-text transition hover:bg-sf-sand focus:outline-none focus:ring-2 focus:ring-sf-green/30"
           >
             Ver todas las categorías
-          </button>
+          </Button>
         </div>
       )}
 
       {!sinArticulos && !sinResultados && (
         <div className="mt-4">
-          <TablaInventario articulos={articulosFiltrados} onEliminar={handleEliminar} />
+          <TablaInventario
+            articulos={articulosFiltrados}
+            onEliminar={setArticuloAEliminar}
+          />
         </div>
       )}
+
+      <ConfirmDialog
+        open={Boolean(articuloAEliminar)}
+        titulo="Eliminar artículo"
+        descripcion={
+          articuloAEliminar
+            ? `Se eliminará "${articuloAEliminar.nombre}" del inventario y de tu carrito. Esta acción no se puede deshacer.`
+            : ''
+        }
+        textoConfirmar="Sí, eliminar"
+        textoCancelar="Cancelar"
+        onConfirmar={confirmarEliminacion}
+        onCancelar={() => setArticuloAEliminar(null)}
+      />
     </section>
   )
 }

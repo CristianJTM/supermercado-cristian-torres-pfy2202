@@ -1,16 +1,10 @@
 import { Link } from 'react-router'
+import Button, { buttonClass } from '../ui/Button.jsx'
+import StockBadge from '../ui/StockBadge.jsx'
+import { formatearCLP } from '../../utils/formatoMoneda.js'
 
-function StockBadge({ stock }) {
-  return (
-    <span
-      className={
-        stock > 0 ? 'font-bold text-sf-green' : 'font-bold text-sf-error'
-      }
-    >
-      {stock > 0 ? `${stock} disponibles` : 'Sin stock'}
-    </span>
-  )
-}
+const ENLACE_TABLA =
+  'text-sf-text underline decoration-sf-green/40 decoration-2 underline-offset-4 transition hover:text-sf-green'
 
 export default function TablaInventario({ articulos, onEliminar }) {
   return (
@@ -23,10 +17,7 @@ export default function TablaInventario({ articulos, onEliminar }) {
           >
             <div className="flex items-start justify-between gap-3">
               <div>
-                <Link
-                  to={`/inventario/detalle/${articulo.id}`}
-                  className="font-bold text-sf-text underline decoration-sf-green/40 decoration-2 underline-offset-4 transition hover:text-sf-green"
-                >
+                <Link to={`/inventario/detalle/${articulo.id}`} className={`font-bold ${ENLACE_TABLA}`}>
                   {articulo.nombre}
                 </Link>
                 <p className="mt-1 mb-0 text-sm text-sf-muted">
@@ -35,28 +26,40 @@ export default function TablaInventario({ articulos, onEliminar }) {
               </div>
               <StockBadge stock={articulo.stock} />
             </div>
-            <div className="mt-4 flex gap-2">
+
+            <p className="mt-3 mb-0 text-sm text-sf-muted">
+              Precio: <span className="font-bold text-sf-text">{formatearCLP(articulo.precio)}</span>
+            </p>
+
+            <div className="mt-4 flex flex-wrap gap-2">
               <Link
                 to={`/inventario/detalle/${articulo.id}`}
-                className="inline-flex flex-1 items-center justify-center rounded-full border border-solid border-sf-border px-3 py-2 text-xs font-bold text-sf-text transition hover:bg-sf-sand focus:outline-none focus:ring-2 focus:ring-sf-green/30"
+                className={buttonClass({ variant: 'secondary', size: 'sm', className: 'flex-1' })}
               >
                 Ver detalle
               </Link>
-              <button
-                type="button"
-                onClick={() => onEliminar(articulo.id)}
+              <Link
+                to={`/inventario/editar/${articulo.id}`}
+                className={buttonClass({ variant: 'secondary', size: 'sm', className: 'flex-1' })}
+              >
+                Editar
+              </Link>
+              <Button
+                variant="danger"
+                size="sm"
+                className="flex-1"
+                onClick={() => onEliminar(articulo)}
                 aria-label={`Eliminar ${articulo.nombre}`}
-                className="inline-flex flex-1 items-center justify-center rounded-full border border-solid border-sf-border px-3 py-2 text-xs font-bold text-sf-error transition hover:bg-sf-sand focus:outline-none focus:ring-2 focus:ring-sf-green/30"
               >
                 Eliminar
-              </button>
+              </Button>
             </div>
           </article>
         ))}
       </div>
 
       <div className="hidden overflow-x-auto rounded-3xl border border-solid border-sf-border bg-white shadow-sm md:block">
-        <table className="min-w-[760px] w-full text-left text-sm">
+        <table className="w-full min-w-[820px] text-left text-sm">
           <caption className="sr-only">Listado de artículos del inventario</caption>
           <thead className="bg-sf-sand text-xs font-extrabold uppercase tracking-wide text-sf-muted">
             <tr>
@@ -70,6 +73,9 @@ export default function TablaInventario({ articulos, onEliminar }) {
                 Tipo
               </th>
               <th scope="col" className="px-4 py-3">
+                Precio
+              </th>
+              <th scope="col" className="px-4 py-3">
                 Stock
               </th>
               <th scope="col" className="px-4 py-3 text-right">
@@ -81,34 +87,40 @@ export default function TablaInventario({ articulos, onEliminar }) {
             {articulos.map((articulo) => (
               <tr key={articulo.id} className="border-t border-solid border-sf-border">
                 <td className="px-4 py-3 font-semibold">
-                  <Link
-                    to={`/inventario/detalle/${articulo.id}`}
-                    className="text-sf-text underline decoration-sf-green/40 decoration-2 underline-offset-4 transition hover:text-sf-green"
-                  >
+                  <Link to={`/inventario/detalle/${articulo.id}`} className={ENLACE_TABLA}>
                     {articulo.nombre}
                   </Link>
                 </td>
                 <td className="px-4 py-3 text-sf-muted">{articulo.marca}</td>
                 <td className="px-4 py-3 text-sf-muted">{articulo.tipo}</td>
+                <td className="px-4 py-3 font-semibold text-sf-text">
+                  {formatearCLP(articulo.precio)}
+                </td>
                 <td className="px-4 py-3">
                   <StockBadge stock={articulo.stock} />
                 </td>
                 <td className="px-4 py-3">
-                  <div className="flex justify-end gap-2">
+                  <div className="flex flex-wrap justify-end gap-2">
                     <Link
                       to={`/inventario/detalle/${articulo.id}`}
-                      className="rounded-full border border-solid border-sf-border px-3 py-1.5 text-xs font-bold text-sf-text transition hover:bg-sf-sand focus:outline-none focus:ring-2 focus:ring-sf-green/30"
+                      className={buttonClass({ variant: 'secondary', size: 'sm' })}
                     >
                       Ver
                     </Link>
-                    <button
-                      type="button"
-                      onClick={() => onEliminar(articulo.id)}
+                    <Link
+                      to={`/inventario/editar/${articulo.id}`}
+                      className={buttonClass({ variant: 'secondary', size: 'sm' })}
+                    >
+                      Editar
+                    </Link>
+                    <Button
+                      variant="danger"
+                      size="sm"
+                      onClick={() => onEliminar(articulo)}
                       aria-label={`Eliminar ${articulo.nombre}`}
-                      className="rounded-full border border-solid border-sf-border px-3 py-1.5 text-xs font-bold text-sf-error transition hover:bg-sf-sand focus:outline-none focus:ring-2 focus:ring-sf-green/30"
                     >
                       Eliminar
-                    </button>
+                    </Button>
                   </div>
                 </td>
               </tr>

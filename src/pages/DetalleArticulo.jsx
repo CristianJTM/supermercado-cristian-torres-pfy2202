@@ -1,8 +1,10 @@
 import { useState } from 'react'
 import { Link, useParams } from 'react-router'
 import InventarioHeader from '../components/inventario/InventarioHeader.jsx'
+import Button, { buttonClass } from '../components/ui/Button.jsx'
 import { ACCIONES, useInventario } from '../context/InventarioContext.jsx'
 import { buscarArticulo } from '../utils/inventario.js'
+import { formatearCLP } from '../utils/formatoMoneda.js'
 
 export default function DetalleArticulo() {
   const { id } = useParams()
@@ -18,10 +20,7 @@ export default function DetalleArticulo() {
           title="Artículo no encontrado"
           lead="El artículo que buscas no existe o fue eliminado del inventario."
         />
-        <Link
-          to="/inventario/lista"
-          className="mt-6 inline-flex items-center justify-center rounded-full bg-sf-green px-5 py-3 text-sm font-bold text-white shadow-sm transition hover:bg-sf-dark focus:outline-none focus:ring-2 focus:ring-sf-green/40"
-        >
+        <Link to="/inventario/lista" className={buttonClass({ className: 'mt-6' })}>
           Volver a la lista
         </Link>
       </section>
@@ -37,7 +36,7 @@ export default function DetalleArticulo() {
 
     dispatch({
       type: ACCIONES.AGREGAR_AL_CARRITO,
-      payload: articulo.id,
+      payload: { articuloId: articulo.id, cantidad: 1 },
     })
     setMensaje('Artículo agregado al carrito.')
   }
@@ -67,7 +66,7 @@ export default function DetalleArticulo() {
             </div>
           </div>
 
-          <dl className="mt-8 grid gap-4 sm:grid-cols-3">
+          <dl className="mt-8 grid gap-4 sm:grid-cols-2">
             <div className="rounded-2xl bg-sf-cream p-4">
               <dt className="text-xs font-extrabold uppercase tracking-wide text-sf-muted">
                 Marca
@@ -82,6 +81,14 @@ export default function DetalleArticulo() {
             </div>
             <div className="rounded-2xl bg-sf-cream p-4">
               <dt className="text-xs font-extrabold uppercase tracking-wide text-sf-muted">
+                Precio
+              </dt>
+              <dd className="mt-1 mb-0 font-bold text-sf-text">
+                {formatearCLP(articulo.precio)}
+              </dd>
+            </div>
+            <div className="rounded-2xl bg-sf-cream p-4">
+              <dt className="text-xs font-extrabold uppercase tracking-wide text-sf-muted">
                 Stock disponible
               </dt>
               <dd className="mt-1 mb-0 font-bold text-sf-text">{articulo.stock}</dd>
@@ -91,23 +98,29 @@ export default function DetalleArticulo() {
 
         <aside className="rounded-3xl border border-solid border-sf-border bg-white p-6 shadow-sm">
           <p className="mb-0 text-xs font-extrabold uppercase tracking-wide text-sf-muted">
+            Precio unitario
+          </p>
+          <p className="mt-1 mb-4 text-3xl font-extrabold text-sf-green">
+            {formatearCLP(articulo.precio)}
+          </p>
+
+          <p className="mb-0 text-xs font-extrabold uppercase tracking-wide text-sf-muted">
             Disponibilidad
           </p>
-          <p className="mt-2 mb-0 text-4xl font-extrabold text-sf-green">
+          <p className="mt-2 mb-0 text-4xl font-extrabold text-sf-text">
             {articulo.stock}
           </p>
           <p className="mt-1 mb-0 text-sm text-sf-muted">
             {sinStock ? 'Sin unidades disponibles.' : 'unidades disponibles'}
           </p>
 
-          <button
-            type="button"
+          <Button
+            className="mt-6 w-full"
             onClick={agregarAlCarrito}
             disabled={sinStock}
-            className="mt-6 inline-flex w-full items-center justify-center rounded-full bg-sf-green px-5 py-3 text-sm font-bold text-white shadow-sm transition hover:bg-sf-dark focus:outline-none focus:ring-2 focus:ring-sf-green/40 disabled:cursor-not-allowed disabled:bg-sf-border disabled:text-sf-muted"
           >
             {sinStock ? 'Sin stock' : 'Agregar al carrito'}
-          </button>
+          </Button>
 
           {mensaje && (
             <p
@@ -119,15 +132,18 @@ export default function DetalleArticulo() {
           )}
 
           <div className="mt-6 flex flex-col gap-3">
-            <Link
-              to="/carrito"
-              className="inline-flex items-center justify-center rounded-full border border-solid border-sf-border px-5 py-3 text-sm font-bold text-sf-text transition hover:bg-sf-sand focus:outline-none focus:ring-2 focus:ring-sf-green/30"
-            >
+            <Link to="/carrito" className={buttonClass({ variant: 'secondary' })}>
               Ver carrito
             </Link>
             <Link
+              to={`/inventario/editar/${articulo.id}`}
+              className={buttonClass({ variant: 'secondary' })}
+            >
+              Editar artículo
+            </Link>
+            <Link
               to="/inventario/lista"
-              className="text-center text-sm font-bold text-sf-green underline decoration-sf-green/40 decoration-2 underline-offset-4"
+              className={buttonClass({ variant: 'link', className: 'text-center' })}
             >
               Volver a la lista
             </Link>

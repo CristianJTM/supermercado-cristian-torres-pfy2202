@@ -2,11 +2,14 @@ import { useMemo } from 'react'
 import { Link } from 'react-router'
 import InventarioHeader from '../components/inventario/InventarioHeader.jsx'
 import TablaCarrito from '../components/carrito/TablaCarrito.jsx'
+import { buttonClass } from '../components/ui/Button.jsx'
 import { ACCIONES, useInventario } from '../context/InventarioContext.jsx'
 import {
+  calcularTotalCarrito,
   contarUnidadesCarrito,
   obtenerCarritoDetallado,
 } from '../utils/inventario.js'
+import { formatearCLP } from '../utils/formatoMoneda.js'
 
 export default function Carrito() {
   const { articulos, carrito, dispatch } = useInventario()
@@ -15,9 +18,10 @@ export default function Carrito() {
     [articulos, carrito],
   )
   const totalUnidades = contarUnidadesCarrito(carrito)
+  const totalCompra = calcularTotalCarrito(items)
 
   function incrementar(articuloId) {
-    dispatch({ type: ACCIONES.INCREMENTAR_CARRITO, payload: articuloId })
+    dispatch({ type: ACCIONES.AGREGAR_AL_CARRITO, payload: { articuloId, cantidad: 1 } })
   }
 
   function decrementar(articuloId) {
@@ -34,19 +38,22 @@ export default function Carrito() {
         <InventarioHeader
           eyebrow="Carrito"
           title="Carrito de compras"
-          lead="Ajusta las cantidades y revisa el stock restante de cada artículo."
+          lead="Ajusta las cantidades y revisa el stock restante y el total de tu compra."
         />
-        <Link
-          to="/inventario/lista"
-          className="inline-flex items-center justify-center rounded-full border border-solid border-sf-border px-5 py-3 text-sm font-bold text-sf-text transition hover:bg-sf-sand focus:outline-none focus:ring-2 focus:ring-sf-green/30"
-        >
+        <Link to="/inventario/lista" className={buttonClass({ variant: 'secondary' })}>
           Seguir comprando
         </Link>
       </div>
 
-      <p className="mt-6 mb-0 text-sm font-semibold text-sf-muted" aria-live="polite">
-        {totalUnidades} {totalUnidades === 1 ? 'unidad en el carrito' : 'unidades en el carrito'}
-      </p>
+      <div className="mt-6 flex flex-col gap-2 rounded-3xl border border-solid border-sf-border bg-white p-4 shadow-sm sm:flex-row sm:items-center sm:justify-between">
+        <p className="mb-0 text-sm font-semibold text-sf-muted" aria-live="polite">
+          {totalUnidades} {totalUnidades === 1 ? 'unidad en el carrito' : 'unidades en el carrito'}
+        </p>
+        <p className="mb-0 text-sm font-semibold text-sf-muted">
+          Total:{' '}
+          <span className="text-lg font-extrabold text-sf-green">{formatearCLP(totalCompra)}</span>
+        </p>
+      </div>
 
       {items.length === 0 ? (
         <div className="mt-4 rounded-3xl border border-dashed border-sf-border bg-white p-10 text-center">
@@ -54,10 +61,7 @@ export default function Carrito() {
           <p className="mt-2 mb-0 text-sm text-sf-muted">
             Agrega artículos desde el detalle de cada producto.
           </p>
-          <Link
-            to="/inventario/lista"
-            className="mt-5 inline-flex items-center justify-center rounded-full bg-sf-green px-5 py-3 text-sm font-bold text-white shadow-sm transition hover:bg-sf-dark focus:outline-none focus:ring-2 focus:ring-sf-green/40"
-          >
+          <Link to="/inventario/lista" className={buttonClass({ className: 'mt-5' })}>
             Ver inventario
           </Link>
         </div>
@@ -69,6 +73,14 @@ export default function Carrito() {
             onDecrementar={decrementar}
             onEliminar={eliminar}
           />
+          <div className="mt-4 flex items-center justify-between rounded-3xl border border-solid border-sf-border bg-white p-5 shadow-sm">
+            <span className="text-sm font-bold uppercase tracking-wide text-sf-muted">
+              Total de la compra
+            </span>
+            <span className="text-2xl font-extrabold text-sf-green" aria-live="polite">
+              {formatearCLP(totalCompra)}
+            </span>
+          </div>
         </div>
       )}
     </section>

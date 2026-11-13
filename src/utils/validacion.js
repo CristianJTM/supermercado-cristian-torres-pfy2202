@@ -6,6 +6,7 @@ const TEXTO_PERMITIDO = /^[A-Za-zÁÉÍÓÚÜÑáéíóúüñ0-9 .,'&()/-]+$/
 const TIENE_LETRA = /[A-Za-zÁÉÍÓÚÜÑáéíóúüñ]/
 const LARGO_MIN = 2
 const LARGO_MAX = 60
+const PRECIO_MAX = 9999999
 
 export function validarContacto(form) {
   const errores = {}
@@ -74,6 +75,18 @@ export function validarArticulo(form, articulos = []) {
     stock > 9999
   ) {
     errores.stock = 'Ingresa una cantidad entera entre 0 y 9999.'
+  }
+
+  const precioTexto = String(form.precio ?? '').trim()
+  const precio = Number(precioTexto)
+
+  if (
+    precioTexto === '' ||
+    !Number.isInteger(precio) ||
+    precio < 1 ||
+    precio > PRECIO_MAX
+  ) {
+    errores.precio = 'Ingresa un precio entero en pesos, entre 1 y 9.999.999.'
   }
 
   if (!errores.nombre && !errores.marca) {

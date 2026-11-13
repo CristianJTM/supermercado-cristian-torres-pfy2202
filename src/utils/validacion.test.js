@@ -7,6 +7,7 @@ const articuloBase = {
   marca: 'Colún',
   tipo: 'Lácteos',
   stock: 10,
+  precio: 1290,
 }
 
 test('acepta artículos válidos', () => {
@@ -51,6 +52,16 @@ test('valida stock entero entre 0 y 9999', () => {
   for (const stock of ['', -1, 1.5, 'abc', 10000]) {
     const errores = validarArticulo({ ...articuloBase, stock })
     assert.ok(errores.stock, `Debe rechazar stock: ${JSON.stringify(stock)}`)
+  }
+})
+
+test('valida un precio entero en pesos entre 1 y 9.999.999', () => {
+  assert.deepEqual(validarArticulo({ ...articuloBase, precio: 1 }), {})
+  assert.deepEqual(validarArticulo({ ...articuloBase, precio: 9999999 }), {})
+
+  for (const precio of ['', 0, -100, 12.5, 'abc', 10000000]) {
+    const errores = validarArticulo({ ...articuloBase, precio })
+    assert.ok(errores.precio, `Debe rechazar precio: ${JSON.stringify(precio)}`)
   }
 })
 

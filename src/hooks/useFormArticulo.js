@@ -7,6 +7,7 @@ export default function useFormArticulo({ initialValues, articulos = [], onGuard
   const nombreRef = useRef(null)
   const marcaRef = useRef(null)
   const stockRef = useRef(null)
+  const precioRef = useRef(null)
   const tipoRef = useRef(null)
 
   function handleChange(event) {
@@ -34,6 +35,8 @@ export default function useFormArticulo({ initialValues, articulos = [], onGuard
         marcaRef.current?.focus()
       } else if (nuevosErrores.stock) {
         stockRef.current?.focus()
+      } else if (nuevosErrores.precio) {
+        precioRef.current?.focus()
       } else if (nuevosErrores.tipo) {
         tipoRef.current?.focus()
       }
@@ -46,6 +49,7 @@ export default function useFormArticulo({ initialValues, articulos = [], onGuard
       marca: form.marca.trim().replace(/\s+/g, ' '),
       tipo: form.tipo,
       stock: Number(form.stock),
+      precio: Number(form.precio),
     })
 
     setForm(initialValues)
@@ -60,6 +64,7 @@ export default function useFormArticulo({ initialValues, articulos = [], onGuard
     nombreRef,
     marcaRef,
     stockRef,
+    precioRef,
     tipoRef,
   }
 }

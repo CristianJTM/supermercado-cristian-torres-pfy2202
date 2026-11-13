@@ -2,15 +2,31 @@ import assert from 'node:assert/strict'
 import test from 'node:test'
 import {
   buscarArticulo,
+  calcularSubtotal,
+  calcularTotalCarrito,
   contarUnidadesCarrito,
   filtrarArticulos,
   obtenerCarritoDetallado,
 } from './inventario.js'
 
 const articulos = [
-  { id: 'a1', nombre: 'Leche', marca: 'Colún', tipo: 'Lácteos', stock: 3 },
-  { id: 'a2', nombre: 'Pan', marca: 'Súper Fresco', tipo: 'Panadería', stock: 5 },
-  { id: 'a3', nombre: 'Manzana', marca: 'Frutas del Sur', tipo: 'Frutas y verduras', stock: 2 },
+  { id: 'a1', nombre: 'Leche', marca: 'Colún', tipo: 'Lácteos', stock: 3, precio: 1290 },
+  {
+    id: 'a2',
+    nombre: 'Pan',
+    marca: 'Súper Fresco',
+    tipo: 'Panadería',
+    stock: 5,
+    precio: 1890,
+  },
+  {
+    id: 'a3',
+    nombre: 'Manzana',
+    marca: 'Frutas del Sur',
+    tipo: 'Frutas y verduras',
+    stock: 2,
+    precio: 990,
+  },
 ]
 
 test('filtrarArticulos devuelve todos con Todas sin mutar el original', () => {
@@ -59,4 +75,19 @@ test('contarUnidadesCarrito suma cantidades', () => {
     5,
   )
   assert.equal(contarUnidadesCarrito([]), 0)
+})
+
+test('calcularSubtotal multiplica precio por cantidad', () => {
+  assert.equal(calcularSubtotal(1290, 3), 3870)
+  assert.equal(calcularSubtotal(990, 0), 0)
+})
+
+test('calcularTotalCarrito suma los subtotales de los items detallados', () => {
+  const items = obtenerCarritoDetallado(articulos, [
+    { articuloId: 'a1', cantidad: 2 },
+    { articuloId: 'a2', cantidad: 1 },
+  ])
+
+  assert.equal(calcularTotalCarrito(items), 1290 * 2 + 1890)
+  assert.equal(calcularTotalCarrito([]), 0)
 })
