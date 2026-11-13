@@ -26,3 +26,7 @@ pnpm-debug.log*
 # Configuración local del asistente
 AGENTS.md
 opencode.json
+
+# Documentación local: solo README.md se publica en GitHub
+*.md
+!README.md

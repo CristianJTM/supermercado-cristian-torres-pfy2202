@@ -3,6 +3,7 @@
 SPA de supermercado desarrollada para **Desarrollo Frontend II (PFY2202)**. La Semana 1 construyó
 la navegación y las páginas institucionales; la Semana 2 agregó inventario global y Tailwind; la
 Semana 3 incorpora filtro por categoría, detalle de artículos y carrito con actualización de stock.
+Sobre esa base se agregaron precios con subtotales, edición de artículos y confirmación de borrado.
 
 ## Sitio publicado
 
@@ -38,7 +39,7 @@ npm run build
 npm run preview
 ```
 
-Para ejecutar las pruebas de validación:
+Para ejecutar las pruebas automatizadas:
 
 ```bash
 npm test
@@ -54,6 +55,7 @@ npm test
 | `/inventario/agregar` | AgregarArticulo | Agregar |
 | `/inventario/lista` | ListaInventario | Lista |
 | `/inventario/detalle/:id` | DetalleArticulo | — |
+| `/inventario/editar/:id` | EditarArticulo | — |
 | `/carrito` | Carrito | Carrito |
 | `*` | NotFound | — |
 
@@ -77,6 +79,7 @@ El estado global es un objeto con inventario y carrito:
       marca: 'Colún',
       tipo: 'Lácteos',
       stock: 8,
+      precio: 1290,
     },
   ],
   carrito: [
@@ -88,8 +91,9 @@ El estado global es un objeto con inventario y carrito:
 }
 ```
 
-`stock` es la cantidad disponible en inventario y `cantidad` es la cantidad en el carrito. El
-carrito referencia artículos por `articuloId`, por lo que los nombres y precios no se duplican.
+`stock` es la cantidad disponible en inventario, `precio` está expresado en pesos chilenos (CLP,
+entero) y `cantidad` es la cantidad en el carrito. El carrito referencia artículos por
+`articuloId`, por lo que nombre, marca y precio no se duplican.
 
 Los 6 artículos de ejemplo viven en `src/data/inventarioInicial.js`. La función
 `crearInventarioInicial()` devuelve una copia nueva de los datos para que el reducer nunca comparta
@@ -97,10 +101,12 @@ objetos con el seed.
 
 Acciones del reducer:
 
-- `ADD_ARTICULO`: agrega un artículo con stock.
+- `ADD_ARTICULO`: agrega un artículo con stock y precio.
+- `EDIT_ARTICULO`: actualiza nombre, marca, tipo, stock y precio conservando el `id` y el carrito.
 - `DELETE_ARTICULO`: elimina el artículo y su referencia del carrito.
-- `ADD_TO_CART`: agrega una unidad y descuenta stock.
-- `INCREMENT_CART`: aumenta la cantidad del carrito y descuenta stock.
+- `ADD_TO_CART`: agrega unidades y descuenta stock. Acepta `{ articuloId, cantidad }`; el detalle
+  envía una unidad y el carrito usa la misma acción para reponer. Si la cantidad supera el stock,
+  no hay cambios.
 - `DECREMENT_CART`: disminuye la cantidad y devuelve stock; al llegar a 1 elimina la fila.
 - `REMOVE_FROM_CART`: quita el artículo y restaura toda su cantidad al stock.
 
@@ -112,10 +118,15 @@ requerimientos de esta actividad.
 - La lista permite filtrar por categoría con estado local. El array `articulos` del contexto no se
   modifica: se deriva con `filtrarArticulos`.
 - Al hacer clic en un artículo se abre `/inventario/detalle/:id`.
-- El detalle muestra nombre, marca, tipo y stock; permite agregar al carrito y deshabilita la acción
-  cuando no hay stock.
+- El detalle muestra nombre, marca, tipo, precio y stock; permite agregar al carrito y deshabilita
+  la acción cuando no hay stock.
 - El carrito lista los artículos agregados, permite aumentar/disminuir cantidades y quitar filas.
+- Cada fila del carrito muestra precio unitario, subtotal y stock restante; el total de la compra
+  se calcula con `calcularTotalCarrito`.
 - Cada operación de carrito actualiza stock y carrito en una sola transición del reducer.
+- Eliminar un artículo del inventario pide confirmación en un diálogo accesible antes de borrarlo.
+- La pantalla `/inventario/editar/:id` reutiliza el formulario y permite corregir los datos sin
+  perder el carrito.
 - El navbar incluye Carrito con un badge que muestra la cantidad total de unidades.
 - Las tablas se convierten en tarjetas en móvil para evitar cortes horizontales.
 
@@ -125,6 +136,7 @@ Las reglas viven en `src/utils/validacion.js` y se prueban en `src/utils/validac
 
 - `nombre` y `marca`: entre 2 y 60 caracteres, con al menos una letra y caracteres permitidos.
 - `stock`: entero entre 0 y 9999.
+- `precio`: entero en pesos chilenos entre 1 y 9.999.999.
 - Se rechazan cadenas vacías, solo espacios, solo números o solo signos.
 - Se permiten números dentro del texto: `3 cereales`, `Leche 1 L`, `Coca-Cola`.
 - `tipo` debe pertenecer a `TIPOS_ARTICULO`.
@@ -142,7 +154,7 @@ Ejemplos inválidos: `""`, `"   "`, `"12345"`, `"!!!"`, `"Leche @"`, `"A"`, tipo
 | `src/context/` | Contexto, Provider, hook `useInventario`, reducer y acciones |
 | `src/pages/` | Composición de vistas |
 | `src/components/layout/` | Navbar, Footer, AppLayout y ScrollToTop |
-| `src/components/ui/` | Componentes compartidos: PageHero, SectionHead, CtaBand, StatList y FormField |
+| `src/components/ui/` | Componentes compartidos: PageHero, SectionHead, CtaBand, StatList, FormField, Button, StockBadge, QuantityStepper y ConfirmDialog |
 | `src/components/home`, `about`, `contact`, `products` | Secciones de dominio de Semana 1 |
 | `src/components/inventario/` | Cabecera y tabla de inventario |
 | `src/components/carrito/` | Tabla/cards del carrito |
@@ -167,6 +179,7 @@ src/
 │  ├─ AgregarArticulo.jsx
 │  ├─ ListaInventario.jsx
 │  ├─ DetalleArticulo.jsx
+│  ├─ EditarArticulo.jsx
 │  ├─ Carrito.jsx
 │  └─ NotFound.jsx
 │
@@ -182,7 +195,11 @@ src/
 │  │  ├─ CtaBand.jsx
 │  │  ├─ StatList.jsx
 │  │  ├─ FormField.jsx
-│  │  └─ FormField.module.css
+│  │  ├─ FormField.module.css
+│  │  ├─ Button.jsx
+│  │  ├─ StockBadge.jsx
+│  │  ├─ QuantityStepper.jsx
+│  │  └─ ConfirmDialog.jsx
 │  ├─ home/
 │  ├─ about/
 │  ├─ contact/
@@ -247,6 +264,8 @@ Para proteger la interfaz existente:
   `rgb(var(--color-...-rgb) / <alpha-value>)`, por lo que no hay hexadecimales duplicados.
 - `FormField` admite `variant="default"` (CSS Modules de Contacto) y `variant="tailwind"`
   (formulario de inventario), manteniendo labels, errores y ARIA en un solo componente.
+- `Button`, `StockBadge` y `QuantityStepper` centralizan botones, estado de stock y controles de
+  cantidad para evitar duplicaciones entre las tablas de inventario y carrito.
 
 ## Despliegue en GitHub Pages
 
